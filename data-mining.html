@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Student Team Grade Form</title>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-lg mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-6">Student Team Grade Form</h1>
+        
+        <div class="space-y-4">
+            <!-- Student Names Section -->
+            <div id="students-container" class="space-y-2">
+                <label class="block font-medium">Student Names</label>
+                <div class="student-input flex gap-2">
+                    <input type="text" placeholder="Student 1" 
+                           class="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            
+            <button id="add-student" 
+                    class="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 print:hidden">
+                Add Student
+            </button>
+
+            <!-- Grade Selection -->
+            <div>
+                <label class="block font-medium mb-1">Team Grade</label>
+                <select class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select grade...</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Comments -->
+            <div>
+                <label class="block font-medium mb-1">Comments (Optional)</label>
+                <textarea class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                          placeholder="Add any comments here..."></textarea>
+            </div>
+
+            <!-- Print Button -->
+            <button onclick="preparePrint()" 
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded print:hidden">
+                Print Form
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('students-container');
+            const addButton = document.getElementById('add-student');
+            let studentCount = 1;
+
+            function createRemoveButton() {
+                const button = document.createElement('button');
+                button.className = 'text-gray-500 hover:text-gray-700 print:hidden';
+                button.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>`;
+                button.onclick = function() {
+                    this.parentElement.remove();
+                    studentCount--;
+                    if (studentCount < 4) {
+                        addButton.style.display = 'block';
+                    }
+                };
+                return button;
+            }
+
+            addButton.onclick = function() {
+                if (studentCount < 4) {
+                    studentCount++;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'student-input flex gap-2';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = `Student ${studentCount}`;
+                    input.className = 'flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500';
+                    
+                    div.appendChild(input);
+                    div.appendChild(createRemoveButton());
+                    container.appendChild(div);
+
+                    if (studentCount === 4) {
+                        addButton.style.display = 'none';
+                    }
+                }
+            };
+        });
+
+        function preparePrint() {
+            // Get all student names
+            const inputs = document.querySelectorAll('.student-input input');
+            const names = Array.from(inputs)
+                .map(input => input.value.trim())
+                .filter(name => name !== '')
+                .map(name => name.toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")  // Remove diacritics
+                );
+
+            // Create filename
+            const filename = names.length > 0 
+                ? `score-${names.join('-')}.pdf`
+                : 'score-team.pdf';
+
+            // Set the document title (which browsers use as default filename)
+            document.title = filename;
+
+            // Print the document
+            window.print();
+
+            // Reset the document title after printing
+            setTimeout(() => {
+                document.title = 'Student Team Grade Form';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
